@@ -17,7 +17,9 @@
 
 /* User Configuration */
 // Timer Clock
-#define TIMER_CLOCK				10000000	// 10MHz
+// FIXME : TODO : remove old value
+//#define TIMER_CLOCK             8000000 // 8MHz
+#define TIMER_CLOCK             24000000 // 24MHz
 
 // MOTOR 1 (PA0) - TIM2 Channel 1, DMA1 Stream ?
 #define MOTOR_1_TIM             (&htim2)
@@ -35,15 +37,14 @@
 #define DSHOT300_HZ     		MHZ_TO_HZ(6)
 #define DSHOT150_HZ     		MHZ_TO_HZ(3)
 
-#if 0 /* FIXME : DEBUG */
-#define MOTOR_BIT_0            	7
-#define MOTOR_BIT_1            	14
-#define MOTOR_BITLENGTH        	20
-#else
-#define MOTOR_BIT_0            	20
-#define MOTOR_BIT_1            	40
-#define MOTOR_BITLENGTH        	53
-#endif
+// FIXME : TODO : remove old values
+//#define MOTOR_BIT_0            	7
+//#define MOTOR_BIT_1            	14
+//#define MOTOR_BITLENGTH        	20
+
+#define MOTOR_BIT_0             60
+#define MOTOR_BIT_1             120
+#define MOTOR_BITLENGTH         160
 
 #define DSHOT_FRAME_SIZE       	16
 #define DSHOT_DMA_BUFFER_SIZE   18 /* resolution + frame reset (2us) */
