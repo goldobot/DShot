@@ -71,6 +71,7 @@ void Error_Handler(void);
 #define VCP_RX_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
+extern TIM_HandleTypeDef htim2;
 
 /* USER CODE END Private defines */
 

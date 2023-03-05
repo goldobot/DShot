@@ -62,6 +62,7 @@ static void MX_TIM2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 uint8_t uart_buf[16] = "testTESTtestTEST";
+uint16_t my_motor_value[4] = {0, 0, 0, 0};
 /* USER CODE END 0 */
 
 /**
@@ -113,6 +114,7 @@ int main(void)
       {
         uart_buf[0] = '*';
         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_3);
+        //dshot_write(my_motor_value);
       }
       else
       {
