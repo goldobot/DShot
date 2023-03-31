@@ -22,6 +22,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "dshot.h"
+#include <string.h>
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,7 +37,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define DSHOT_SPEED DSHOT150
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -75,7 +77,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
   HAL_StatusTypeDef res;
-  int i,j;
+  int msg_len = 0;
 
   /* USER CODE END 1 */
 
@@ -103,9 +105,13 @@ int main(void)
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim6);
-  uart_buf[0] = 'I';
-  HAL_UART_Transmit(&huart2, uart_buf, 1, 100);
-  dshot_init(DSHOT150);
+
+  sprintf ((char *)uart_buf, "DSHOT INIT %d\n", DSHOT_SPEED);
+  msg_len = strlen((char *)uart_buf);
+  if (msg_len>sizeof(uart_buf)) msg_len = sizeof(uart_buf);
+  HAL_UART_Transmit(&huart2, uart_buf, msg_len, 100);
+
+  dshot_init(DSHOT_SPEED);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -121,52 +127,6 @@ int main(void)
         uart_buf[0] = '*';
         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_3);
         my_motor_value[0] = 0;
-#if 0 /* FIXME : TODO : remove */
-        for (i=0; i<20000; i++)
-        {
-          dshot_write(my_motor_value);
-          for (j=0; j<280; j++)
-          {
-            uart_buf[0] = '*';
-          }
-        }
-        my_motor_value[0] = 100;
-        for (i=0; i<20000; i++)
-        {
-          dshot_write(my_motor_value);
-          for (j=0; j<280; j++)
-          {
-            uart_buf[0] = '*';
-          }
-        }
-        my_motor_value[0] = 0;
-        for (i=0; i<20000; i++)
-        {
-          dshot_write(my_motor_value);
-          for (j=0; j<280; j++)
-          {
-            uart_buf[0] = '*';
-          }
-        }
-        my_motor_value[0] = 200;
-        for (i=0; i<20000; i++)
-        {
-          dshot_write(my_motor_value);
-          for (j=0; j<280; j++)
-          {
-            uart_buf[0] = '*';
-          }
-        }
-        my_motor_value[0] = 1000;
-        for (i=0; i<200000; i++)
-        {
-          dshot_write(my_motor_value);
-          for (j=0; j<280; j++)
-          {
-            uart_buf[0] = '*';
-          }
-        }
-#endif
       }
       else if ((uart_buf[0]>='0') && (uart_buf[0]<='9'))
       {
