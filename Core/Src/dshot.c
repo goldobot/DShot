@@ -14,6 +14,9 @@
 /* Variables */
 static uint32_t motor1_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
 static uint32_t motor2_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
+static uint32_t motor3_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
+static uint32_t motor4_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
+static uint32_t motor5_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
 
 
 /* Static functions */
@@ -31,6 +34,7 @@ static void dshot_prepare_dmabuffer_all();
 static void dshot_dma_start();
 static void dshot_enable_dma_request();
 
+int dshot_ready = 0;
 
 /* Functions */
 void dshot_init(dshot_type_e dshot_type)
@@ -38,10 +42,13 @@ void dshot_init(dshot_type_e dshot_type)
 	dshot_set_timer(dshot_type);
 	dshot_put_tc_callback_function();
 	dshot_start_pwm();
+  dshot_ready = 1;
 }
 
 void dshot_write(uint16_t* motor_value)
 {
+  if (!dshot_ready) return;
+
 	dshot_prepare_dmabuffer_all(motor_value);
 	dshot_dma_start();
 	dshot_enable_dma_request();
@@ -80,6 +87,18 @@ static void dshot_set_timer(dshot_type_e dshot_type)
 	// motor2
 	__HAL_TIM_SET_PRESCALER(MOTOR_2_TIM, dshot_prescaler);
 	__HAL_TIM_SET_AUTORELOAD(MOTOR_2_TIM, MOTOR_BITLENGTH);
+
+	// motor3
+	__HAL_TIM_SET_PRESCALER(MOTOR_3_TIM, dshot_prescaler);
+	__HAL_TIM_SET_AUTORELOAD(MOTOR_3_TIM, MOTOR_BITLENGTH);
+
+	// motor4
+	__HAL_TIM_SET_PRESCALER(MOTOR_4_TIM, dshot_prescaler);
+	__HAL_TIM_SET_AUTORELOAD(MOTOR_4_TIM, MOTOR_BITLENGTH);
+
+	// motor5
+	__HAL_TIM_SET_PRESCALER(MOTOR_5_TIM, dshot_prescaler);
+	__HAL_TIM_SET_AUTORELOAD(MOTOR_5_TIM, MOTOR_BITLENGTH);
 }
 
 // __HAL_TIM_DISABLE_DMA is needed to eliminate the delay between different dshot signals
@@ -88,13 +107,25 @@ static void dshot_dma_tc_callback(DMA_HandleTypeDef *hdma)
 {
 	TIM_HandleTypeDef *htim = (TIM_HandleTypeDef *)((DMA_HandleTypeDef *)hdma)->Parent;
 
-	if (hdma == htim->hdma[TIM_DMA_ID_CC1])
+	if (hdma == htim->hdma[MOTOR_1_TIM_DMA_ID])
 	{
-		__HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC1);
+		__HAL_TIM_DISABLE_DMA(htim, MOTOR_1_TIM_DMA);
 	}
-	else if(hdma == htim->hdma[TIM_DMA_ID_CC3])
+	else if(hdma == htim->hdma[MOTOR_2_TIM_DMA_ID])
 	{
-		__HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC3);
+		__HAL_TIM_DISABLE_DMA(htim, MOTOR_2_TIM_DMA);
+	}
+	else if(hdma == htim->hdma[MOTOR_3_TIM_DMA_ID])
+	{
+		__HAL_TIM_DISABLE_DMA(htim, MOTOR_3_TIM_DMA);
+	}
+	else if(hdma == htim->hdma[MOTOR_4_TIM_DMA_ID])
+	{
+		__HAL_TIM_DISABLE_DMA(htim, MOTOR_4_TIM_DMA);
+	}
+	else if(hdma == htim->hdma[MOTOR_5_TIM_DMA_ID])
+	{
+		__HAL_TIM_DISABLE_DMA(htim, MOTOR_5_TIM_DMA);
 	}
 
 }
@@ -102,8 +133,11 @@ static void dshot_dma_tc_callback(DMA_HandleTypeDef *hdma)
 static void dshot_put_tc_callback_function()
 {
 	// TIM_DMA_ID_CCx depends on timer channel
-	MOTOR_1_TIM->hdma[TIM_DMA_ID_CC1]->XferCpltCallback = dshot_dma_tc_callback;
-	MOTOR_2_TIM->hdma[TIM_DMA_ID_CC3]->XferCpltCallback = dshot_dma_tc_callback;
+	MOTOR_1_TIM->hdma[MOTOR_1_TIM_DMA_ID]->XferCpltCallback = dshot_dma_tc_callback;
+	MOTOR_2_TIM->hdma[MOTOR_2_TIM_DMA_ID]->XferCpltCallback = dshot_dma_tc_callback;
+	MOTOR_3_TIM->hdma[MOTOR_3_TIM_DMA_ID]->XferCpltCallback = dshot_dma_tc_callback;
+	MOTOR_4_TIM->hdma[MOTOR_4_TIM_DMA_ID]->XferCpltCallback = dshot_dma_tc_callback;
+	MOTOR_5_TIM->hdma[MOTOR_5_TIM_DMA_ID]->XferCpltCallback = dshot_dma_tc_callback;
 }
 
 static void dshot_start_pwm()
@@ -112,6 +146,9 @@ static void dshot_start_pwm()
     // Enabling/disabling DMA request can restart a new cycle without PWM start/stop.
   	HAL_TIM_PWM_Start(MOTOR_1_TIM, MOTOR_1_TIM_CHANNEL);
   	HAL_TIM_PWM_Start(MOTOR_2_TIM, MOTOR_2_TIM_CHANNEL);
+  	HAL_TIM_PWM_Start(MOTOR_3_TIM, MOTOR_3_TIM_CHANNEL);
+  	HAL_TIM_PWM_Start(MOTOR_4_TIM, MOTOR_4_TIM_CHANNEL);
+  	HAL_TIM_PWM_Start(MOTOR_5_TIM, MOTOR_5_TIM_CHANNEL);
 }
 
 static uint16_t dshot_prepare_packet(uint16_t value)
@@ -157,17 +194,26 @@ static void dshot_prepare_dmabuffer_all(uint16_t* motor_value)
 {
 	dshot_prepare_dmabuffer(motor1_dmabuffer, motor_value[0]);
 	dshot_prepare_dmabuffer(motor2_dmabuffer, motor_value[1]);
+	dshot_prepare_dmabuffer(motor3_dmabuffer, motor_value[1]);
+	dshot_prepare_dmabuffer(motor4_dmabuffer, motor_value[1]);
+	dshot_prepare_dmabuffer(motor5_dmabuffer, motor_value[1]);
 }
 
 static void dshot_dma_start()
 {
-	HAL_DMA_Start_IT(MOTOR_1_TIM->hdma[TIM_DMA_ID_CC1], (uint32_t)motor1_dmabuffer, (uint32_t)&MOTOR_1_TIM->Instance->CCR1, DSHOT_DMA_BUFFER_SIZE);
-	HAL_DMA_Start_IT(MOTOR_2_TIM->hdma[TIM_DMA_ID_CC3], (uint32_t)motor2_dmabuffer, (uint32_t)&MOTOR_2_TIM->Instance->CCR3, DSHOT_DMA_BUFFER_SIZE);
+	HAL_DMA_Start_IT(MOTOR_1_TIM->hdma[MOTOR_1_TIM_DMA_ID], (uint32_t)motor1_dmabuffer, (uint32_t)&MOTOR_1_TIM_CCR, DSHOT_DMA_BUFFER_SIZE);
+	HAL_DMA_Start_IT(MOTOR_2_TIM->hdma[MOTOR_2_TIM_DMA_ID], (uint32_t)motor2_dmabuffer, (uint32_t)&MOTOR_2_TIM_CCR, DSHOT_DMA_BUFFER_SIZE);
+	HAL_DMA_Start_IT(MOTOR_3_TIM->hdma[MOTOR_3_TIM_DMA_ID], (uint32_t)motor3_dmabuffer, (uint32_t)&MOTOR_3_TIM_CCR, DSHOT_DMA_BUFFER_SIZE);
+	HAL_DMA_Start_IT(MOTOR_4_TIM->hdma[MOTOR_4_TIM_DMA_ID], (uint32_t)motor4_dmabuffer, (uint32_t)&MOTOR_4_TIM_CCR, DSHOT_DMA_BUFFER_SIZE);
+	HAL_DMA_Start_IT(MOTOR_5_TIM->hdma[MOTOR_5_TIM_DMA_ID], (uint32_t)motor5_dmabuffer, (uint32_t)&MOTOR_5_TIM_CCR, DSHOT_DMA_BUFFER_SIZE);
 
 }
 
 static void dshot_enable_dma_request()
 {
-	__HAL_TIM_ENABLE_DMA(MOTOR_1_TIM, TIM_DMA_CC1);
-	__HAL_TIM_ENABLE_DMA(MOTOR_2_TIM, TIM_DMA_CC3);
+	__HAL_TIM_ENABLE_DMA(MOTOR_1_TIM, MOTOR_1_TIM_DMA);
+	__HAL_TIM_ENABLE_DMA(MOTOR_2_TIM, MOTOR_2_TIM_DMA);
+	__HAL_TIM_ENABLE_DMA(MOTOR_3_TIM, MOTOR_3_TIM_DMA);
+	__HAL_TIM_ENABLE_DMA(MOTOR_4_TIM, MOTOR_4_TIM_DMA);
+	__HAL_TIM_ENABLE_DMA(MOTOR_5_TIM, MOTOR_5_TIM_DMA);
 }

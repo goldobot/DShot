@@ -21,13 +21,40 @@
 //#define TIMER_CLOCK             8000000 // 8MHz
 #define TIMER_CLOCK             24000000 // 24MHz
 
-// MOTOR 1 (PA0) - TIM2 Channel 1, DMA1 Stream ?
+// MOTOR 1 (PA5) - TIM2 Channel 1, DMA1 Stream ?
 #define MOTOR_1_TIM             (&htim2)
 #define MOTOR_1_TIM_CHANNEL     TIM_CHANNEL_1
+#define MOTOR_1_TIM_DMA_ID      TIM_DMA_ID_CC1
+#define MOTOR_1_TIM_DMA         TIM_DMA_CC1
+#define MOTOR_1_TIM_CCR         (MOTOR_1_TIM->Instance->CCR1)
 
-// MOTOR 2 (PA1) - TIM2 Channel 2, DMA1 Stream ?
+// MOTOR 2 (PA9) - TIM2 Channel 3, DMA1 Stream ?
 #define MOTOR_2_TIM             (&htim2)
 #define MOTOR_2_TIM_CHANNEL     TIM_CHANNEL_3
+#define MOTOR_2_TIM_DMA_ID      TIM_DMA_ID_CC3
+#define MOTOR_2_TIM_DMA         TIM_DMA_CC3
+#define MOTOR_2_TIM_CCR         (MOTOR_2_TIM->Instance->CCR3)
+
+// MOTOR 3 (PA8) - TIM1 Channel 1, DMA1 Stream ?
+#define MOTOR_3_TIM             (&htim1)
+#define MOTOR_3_TIM_CHANNEL     TIM_CHANNEL_1
+#define MOTOR_3_TIM_DMA_ID      TIM_DMA_ID_CC1
+#define MOTOR_3_TIM_DMA         TIM_DMA_CC1
+#define MOTOR_3_TIM_CCR         (MOTOR_3_TIM->Instance->CCR1)
+
+// MOTOR 4 (PA6) - TIM3 Channel 1, DMA1 Stream ?
+#define MOTOR_4_TIM             (&htim3)
+#define MOTOR_4_TIM_CHANNEL     TIM_CHANNEL_1
+#define MOTOR_4_TIM_DMA_ID      TIM_DMA_ID_CC1
+#define MOTOR_4_TIM_DMA         TIM_DMA_CC1
+#define MOTOR_4_TIM_CCR         (MOTOR_4_TIM->Instance->CCR1)
+
+// MOTOR 5 (PA6) - TIM3 Channel 1, DMA1 Stream ?
+#define MOTOR_5_TIM             (&htim3)
+#define MOTOR_5_TIM_CHANNEL     TIM_CHANNEL_4
+#define MOTOR_5_TIM_DMA_ID      TIM_DMA_ID_CC4
+#define MOTOR_5_TIM_DMA         TIM_DMA_CC4
+#define MOTOR_5_TIM_CCR         (MOTOR_5_TIM->Instance->CCR4)
 
 
 /* Definition */
