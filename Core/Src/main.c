@@ -44,7 +44,7 @@
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim6;
 DMA_HandleTypeDef hdma_tim2_ch1;
-DMA_HandleTypeDef hdma_tim2_ch2_ch4;
+DMA_HandleTypeDef hdma_tim2_ch3;
 
 UART_HandleTypeDef huart2;
 
@@ -66,7 +66,7 @@ static void MX_TIM6_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 uint8_t uart_buf[16] = "testTESTtestTEST";
-uint16_t my_motor_value[4] = {0, 0, 0, 0};
+uint16_t my_motor_value[5] = {0, 0, 0, 0, 0};
 /* USER CODE END 0 */
 
 /**
@@ -78,6 +78,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
   HAL_StatusTypeDef res;
   int msg_len = 0;
+  int dshot_idx = 0;
 
   /* USER CODE END 1 */
 
@@ -127,12 +128,41 @@ int main(void)
         uart_buf[0] = '*';
         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_3);
         my_motor_value[0] = 0;
+        my_motor_value[1] = 0;
+        my_motor_value[2] = 0;
+        my_motor_value[3] = 0;
+        my_motor_value[4] = 0;
       }
       else if ((uart_buf[0]>='0') && (uart_buf[0]<='9'))
       {
         int gain = (uart_buf[0]-0x30);
         //uart_buf[0] = '0';
-        my_motor_value[0] = gain*100;
+        my_motor_value[dshot_idx] = gain*100;
+      }
+      else if (uart_buf[0]=='A')
+      {
+        dshot_idx = 0;
+        uart_buf[0] = '0';
+      }
+      else if (uart_buf[0]=='B')
+      {
+        dshot_idx = 1;
+        uart_buf[0] = '1';
+      }
+      else if (uart_buf[0]=='C')
+      {
+        dshot_idx = 2;
+        uart_buf[0] = '2';
+      }
+      else if (uart_buf[0]=='D')
+      {
+        dshot_idx = 3;
+        uart_buf[0] = '3';
+      }
+      else if (uart_buf[0]=='E')
+      {
+        dshot_idx = 4;
+        uart_buf[0] = '4';
       }
       else
       {
@@ -233,7 +263,7 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
@@ -327,12 +357,12 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
   /* DMA1_Channel5_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
-  /* DMA1_Channel7_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
 
 }
 

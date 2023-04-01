@@ -27,7 +27,7 @@
 
 // MOTOR 2 (PA1) - TIM2 Channel 2, DMA1 Stream ?
 #define MOTOR_2_TIM             (&htim2)
-#define MOTOR_2_TIM_CHANNEL     TIM_CHANNEL_2
+#define MOTOR_2_TIM_CHANNEL     TIM_CHANNEL_3
 
 
 /* Definition */
