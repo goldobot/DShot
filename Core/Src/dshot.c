@@ -194,9 +194,9 @@ static void dshot_prepare_dmabuffer_all(uint16_t* motor_value)
 {
 	dshot_prepare_dmabuffer(motor1_dmabuffer, motor_value[0]);
 	dshot_prepare_dmabuffer(motor2_dmabuffer, motor_value[1]);
-	dshot_prepare_dmabuffer(motor3_dmabuffer, motor_value[1]);
-	dshot_prepare_dmabuffer(motor4_dmabuffer, motor_value[1]);
-	dshot_prepare_dmabuffer(motor5_dmabuffer, motor_value[1]);
+	dshot_prepare_dmabuffer(motor3_dmabuffer, motor_value[2]);
+	dshot_prepare_dmabuffer(motor4_dmabuffer, motor_value[3]);
+	dshot_prepare_dmabuffer(motor5_dmabuffer, motor_value[4]);
 }
 
 static void dshot_dma_start()
