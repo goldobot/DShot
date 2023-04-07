@@ -41,6 +41,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
@@ -66,14 +68,16 @@ static void MX_TIM2_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM1_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t uart_buf[16] = "testTESTtestTEST";
+uint8_t uart_buf[32] = "testTESTtestTESTtestTESTtestTEST";
 uint16_t my_motor_value[5] = {0, 0, 0, 0, 0};
+uint8_t i2c_buf[16] = {0};
 /* USER CODE END 0 */
 
 /**
@@ -113,6 +117,7 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM3_Init();
   MX_TIM1_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim6);
 
@@ -122,6 +127,38 @@ int main(void)
   HAL_UART_Transmit(&huart2, uart_buf, msg_len, 100);
 
   dshot_init(DSHOT_SPEED);
+
+  res = HAL_I2C_Master_Receive(&hi2c1, 0xf1, i2c_buf, 4, 200);
+  if (res == HAL_OK)
+  {
+    sprintf ((char *)uart_buf, "I2C : %d %d %d %d\n", (int)i2c_buf[0], (int)i2c_buf[1], (int)i2c_buf[2], (int)i2c_buf[3]);
+    msg_len = strlen((char *)uart_buf);
+    if (msg_len>sizeof(uart_buf)) msg_len = sizeof(uart_buf);
+    HAL_UART_Transmit(&huart2, uart_buf, msg_len, 100);
+  }
+  else
+  {
+    sprintf ((char *)uart_buf, "I2C : ERROR (retrying)\n");
+    msg_len = strlen((char *)uart_buf);
+    if (msg_len>sizeof(uart_buf)) msg_len = sizeof(uart_buf);
+    HAL_UART_Transmit(&huart2, uart_buf, msg_len, 100);
+
+    res = HAL_I2C_Master_Receive(&hi2c1, 0xf1, i2c_buf, 4, 200);
+    if (res == HAL_OK)
+    {
+      sprintf ((char *)uart_buf, "I2C : %d %d %d %d\n", (int)i2c_buf[0], (int)i2c_buf[1], (int)i2c_buf[2], (int)i2c_buf[3]);
+      msg_len = strlen((char *)uart_buf);
+      if (msg_len>sizeof(uart_buf)) msg_len = sizeof(uart_buf);
+      HAL_UART_Transmit(&huart2, uart_buf, msg_len, 100);
+    }
+    else
+    {
+      sprintf ((char *)uart_buf, "I2C : ERROR (again)\n");
+      msg_len = strlen((char *)uart_buf);
+      if (msg_len>sizeof(uart_buf)) msg_len = sizeof(uart_buf);
+      HAL_UART_Transmit(&huart2, uart_buf, msg_len, 100);
+    }
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -229,12 +266,61 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_TIM1;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_TIM1;
+  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_HSI;
   PeriphClkInit.Tim1ClockSelection = RCC_TIM1CLK_HCLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x0000020C;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_DISABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
 }
 
 /**
